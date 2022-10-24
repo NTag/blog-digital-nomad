@@ -1,0 +1,23 @@
+{
+  "name": "blog-digital-nomad",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "zx index.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NTag/blog-digital-nomad.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/NTag/blog-digital-nomad/issues"
+  },
+  "homepage": "https://github.com/NTag/blog-digital-nomad#readme",
+  "dependencies": {
+    "zx": "^7.1.1"
+  }
+}
