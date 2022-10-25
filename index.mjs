@@ -1,11 +1,13 @@
 import "zx/globals";
 
+import { findLocation } from "./src/cities.mjs";
+
 const CITIES = [
-  { name: "Manchester,UK", days: 6 },
-  { name: "Sheffield,UK", days: 3 },
-  { name: "Leeds,UK", days: 2 },
-  { name: "Blackpool,UK", days: 7 },
-  { name: "London,UK", days: 5 },
+  { name: "Manchester,GB", days: 6 },
+  { name: "Sheffield,GB", days: 3 },
+  { name: "Leeds,GB", days: 2 },
+  { name: "Blackpool,GB", days: 7 },
+  { name: "London,GB", days: 5 },
   { name: "Marseille", days: 6 },
   { name: "Alençon", days: 3 * 7 },
   { name: "Lille", days: 4 * 30 },
@@ -17,14 +19,14 @@ const CITIES = [
   { name: "Strasbourg", days: 3 * 7 },
   { name: "Valencia,ES", days: 7 },
   { name: "Javea,ES", days: 3 * 7 },
-  { name: "Montpellier", days: 3 * 7 },
+  { name: "Montpellier", days: 3 * 30 },
   { name: "Ajaccio", days: 5 },
   { name: "Bordeaux", days: 3 * 7 },
-  { name: "Brighton,UK", days: 14 },
-  { name: "Bristol,UK", days: 6 },
-  { name: "Oxford,UK", days: 3 },
-  { name: "Edinburgh,UK", days: 3 },
-  { name: "Glasgow,UK", days: 3 },
+  { name: "Brighton,GB", days: 14 },
+  { name: "Bristol,GB", days: 6 },
+  { name: "Oxford,GB", days: 3 },
+  { name: "Edinburgh,GB", days: 3 },
+  { name: "Glasgow,GB", days: 3 },
   { name: "Paris", days: 2 * 12 + 7 },
   { name: "Souillac", days: 5 },
   { name: "Toulouse", days: 3 },
@@ -55,6 +57,7 @@ const TRIPS = [
 
   ["Paris", "Strasbourg"],
   ["Strasbourg", "Baden-Baden"],
+  ["Strasbourg", "Colmar"],
 
   ["Paris", "Barcelona"],
   ["Barcelona", "Valencia"],
@@ -91,3 +94,17 @@ const TRIPS = [
   ["Glasgow", "Fort William"],
   ["Glasgow", "London"],
 ];
+
+const main = async () => {
+  const citiesCoordinates = CITIES.map(({ name, days }) => {
+    const [city, country] = name.split(",");
+
+    const [lat, lng] = findLocation(city, country);
+
+    return { lat, lng, days, city };
+  });
+
+  await fs.writeJSON("data.json", citiesCoordinates);
+};
+
+main();
