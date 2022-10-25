@@ -3,13 +3,22 @@ import levenshtein from "fast-levenshtein";
 
 const MIN_POPULATION = 10_000;
 
-export const findLocation = (city, countryCode = "FR") => {
+export const findLocation = (name, minPopulation = MIN_POPULATION) => {
+  if (Array.isArray(name)) {
+    return name;
+  }
+
+  const [city, countryCode = "FR"] = name.split(",");
+  if (city === "Strasbourg") {
+    return [48.5858496, 7.7322157];
+  }
+
   const smallerCities = cities.filter((c) => {
     if (countryCode && c.country !== countryCode) {
       return false;
     }
 
-    return c.population > MIN_POPULATION;
+    return c.population > minPopulation;
   });
   const citiesWithScore = smallerCities.map((c) => {
     const score = levenshtein.get(c.name, city) - c.population / 5_000_000;

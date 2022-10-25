@@ -38,40 +38,48 @@ const TRIPS = [
   ["Paris", "Marseille"],
   ["Paris", "Alençon"],
 
-  ["Paris", "London"],
-  ["London", "Manchester"],
-  ["Manchester", "Sheffield"],
-  ["Sheffield", "Leeds"],
-  ["Leeds", "Blackpool"],
-  ["Blackpool", "London"],
+  ["Paris", "London,GB"],
+  ["London,GB", "Manchester,GB"],
+  ["Manchester,GB", "Sheffield,GB"],
+  ["Sheffield,GB", "Leeds,GB"],
+  ["Leeds,GB", "Blackpool,GB"],
+  ["Blackpool,GB", "London,GB"],
 
   ["Paris", "Lille"],
-  ["Lille", "Bruges"],
-  ["Bruges", "Ghent"],
-  ["Ghent", "Antwerp"],
-  ["Antwerp", "Lille"],
+  ["Lille", "Bruges,BE"],
+  ["Bruges,BE", "Ghent,BE"],
+  ["Ghent,BE", "Antwerp,BE"],
+  ["Antwerp,BE", "Lille"],
 
   ["Paris", "Briançon"],
   ["Briançon", "Lyon"],
   ["Lyon", "Paris"],
 
   ["Paris", "Strasbourg"],
-  ["Strasbourg", "Baden-Baden"],
+  ["Strasbourg", "Baden-Baden,DE"],
   ["Strasbourg", "Colmar"],
 
-  ["Paris", "Barcelona"],
-  ["Barcelona", "Valencia"],
-  ["Valencia", "Montpellier"],
+  ["Paris", "Barcelona,ES"],
+  ["Barcelona,ES", "Valencia,ES"],
+  ["Valencia,ES", "Montpellier"],
   ["Montpellier", "Paris"],
   ["Montpellier", "Marseille"],
   ["Montpellier", "Toulouse"],
   ["Toulouse", "Souillac"],
+  ["Souillac", "Paris"],
   ["Montpellier", "Bézier"],
-  ["Bézier", "Sancerre"],
+  ["Bézier", [45.125436, 2.9779866]],
+  [[45.125436, 2.9779866], "Clermont-Ferrand"],
+  ["Clermont-Ferrand", "Sancerre"],
+  ["Paris", "Sancerre"],
   ["Montpellier", "Montélimar"],
   ["Montpellier", "Perpignan"],
-  ["Perpignan", "Latour-de-Carol"],
-  ["Latour-de-Carol", "Toulouse"],
+  ["Perpignan", [42.5917652, 2.3681923]],
+  [
+    [42.5917652, 2.3681923],
+    [42.4593287, 1.9027648],
+  ],
+  [[42.4593287, 1.9027648], "Toulouse"],
   ["Toulouse", "Saint-Gaudens"],
 
   ["Toulouse", "Bordeaux"],
@@ -81,30 +89,65 @@ const TRIPS = [
   ["Tours", "Caen"],
   ["Caen", "Paris"],
 
-  ["Porthsmouth", "Brighton"],
-  ["Brighton", "London"],
-  ["London", "Penzance"],
-  ["Penzance", "Falmouth"],
-  ["Falmouth", "Newquay"],
-  ["Newquay", "Bristol"],
-  ["Bristol", "Oxford"],
-  ["Oxford", "London"],
-  ["London", "Edinburgh"],
-  ["Edinburgh", "Glasgow"],
-  ["Glasgow", "Fort William"],
-  ["Glasgow", "London"],
+  ["Porthsmouth,GB", "Brighton,GB"],
+  ["Brighton,GB", "London,GB"],
+  ["London,GB", [50.1216615, -5.5333812]],
+  [
+    [50.1216615, -5.5333812],
+    [50.1507111, -5.0558902],
+  ],
+  [[50.1507111, -5.0558902], "Newquay,GB"],
+  ["Newquay,GB", "Bristol,GB"],
+  ["Bristol,GB", "Oxford,GB"],
+  ["Oxford,GB", "London,GB"],
+  ["London,GB", "Edinburgh,GB"],
+  ["Edinburgh,GB", "Glasgow,GB"],
+  ["Glasgow,GB", "Fort William,GB"],
+  ["Glasgow,GB", "London,GB"],
 ];
 
-const main = async () => {
+const processCities = async () => {
   const citiesCoordinates = CITIES.map(({ name, days }) => {
-    const [city, country] = name.split(",");
+    const [lat, lng] = findLocation(name, 0);
 
-    const [lat, lng] = findLocation(city, country);
-
-    return { lat, lng, days, city };
+    return { lat, lng, days, city: name };
   });
 
-  await fs.writeJSON("data.json", citiesCoordinates);
+  await fs.writeJSON("cities.json", citiesCoordinates);
+};
+
+const processTrips = async () => {
+  const features = [];
+  for (const trip of TRIPS) {
+    const [from, to] = trip;
+    const [originLat, originLng] = findLocation(from, 0);
+    const [destinationLat, destinationLng] = findLocation(to, 0);
+
+    try {
+      console.log(from, to);
+      const featureRaw = await fetch(
+        `https://trainmap.ntag.fr/api/route?dep=${originLat},${originLng}&arr=${destinationLat},${destinationLng}`
+      );
+      const feature = await featureRaw.json();
+      feature.properties = {
+        trip: `${from} → ${to}`,
+      };
+      features.push(feature);
+    } catch (e) {
+      console.log("Failing trip for:", from, to);
+      console.error(e);
+    }
+  }
+
+  await fs.writeJSON("trips.json", {
+    type: "FeatureCollection",
+    features: features,
+  });
+};
+
+const main = async () => {
+  await processCities();
+  await processTrips();
 };
 
 main();
