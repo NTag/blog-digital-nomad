@@ -1,9 +1,7 @@
 import cities from "all-the-cities";
 import levenshtein from "fast-levenshtein";
 
-const MIN_POPULATION = 10_000;
-
-export const findLocation = (name, minPopulation = MIN_POPULATION) => {
+export const findLocation = (name, minPopulation = 0) => {
   if (Array.isArray(name)) {
     return name;
   }
